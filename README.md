@@ -11,7 +11,13 @@ macOS Launchpad 复刻版——以窗口形式展示所有已安装 App，支持
 - 深色不透明背景，原生毛玻璃元素
 - 支持全屏模式
 
-## 构建
+## 下载
+
+[⬇️ 启动台.zip](启动台.zip) — 直接下载预编译的 `.app` 包，解压后拖入 `/Applications` 即可使用。
+
+> 要求 macOS 14.0+，仅限 Apple Silicon (arm64)。
+
+## 自行构建
 
 ```bash
 swift build -c release
