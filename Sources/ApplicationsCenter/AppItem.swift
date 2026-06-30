@@ -1,23 +1,32 @@
 import Cocoa
 import CoreServices
+import CommonCrypto
 
-struct AppItem: Identifiable, Hashable, @unchecked Sendable {
+struct AppItem: Identifiable, Hashable, Codable, @unchecked Sendable {
     let name: String
     let url: URL
-    let icon: NSImage
+    let modificationDate: Date?
+    let iconCacheKey: String
 
     var id: String { url.path }
 
     init?(url: URL) {
         guard url.pathExtension == "app" else { return nil }
-        let fm = FileManager.default
-        guard fm.fileExists(atPath: url.path) else { return nil }
+
+        let attrs = (try? FileManager.default.attributesOfItem(atPath: url.path)) ?? [:]
+        self.modificationDate = attrs[.modificationDate] as? Date
         self.url = url
         self.name = Self.displayName(for: url)
-        self.icon = NSWorkspace.shared.icon(forFile: url.path)
+
+        let pathData = url.path.data(using: .utf8) ?? Data()
+        var hash = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
+        pathData.withUnsafeBytes { _ = CC_SHA256($0.baseAddress, CC_LONG(pathData.count), &hash) }
+        let pathHash = hash.prefix(8).map { String(format: "%02x", $0) }.joined()
+        let modStamp = Int64((modificationDate?.timeIntervalSince1970 ?? 0) * 1000)
+        self.iconCacheKey = "\(pathHash)_\(modStamp)"
     }
 
-    /// 优先用 Spotlight 元数据 kMDItemDisplayName（与原生启动台一致，返回本地化名如“计算器”），
+    /// 优先用 Spotlight 元数据 kMDItemDisplayName（与原生启动台一致，返回本地化名如"计算器"），
     /// 并去掉 `.app` 后缀；失败回退到文件显示名。
     private static func displayName(for url: URL) -> String {
         if let item = MDItemCreate(kCFAllocatorDefault, url.path as CFString),
@@ -48,7 +57,6 @@ struct AppItem: Identifiable, Hashable, @unchecked Sendable {
 
     /// 递归扫描目录收集所有 `.app`。`.skipsPackageDescendants` 让枚举器遇到
     /// bundle（如 `.app`）即跳过其内部，无需手动 skipDescendants。
-    /// 设计为在后台线程执行（NSWorkspace.shared.icon 与 FileManager 均线程安全）。
     nonisolated static func scanAll(in directories: [String]) -> [AppItem] {
         let fm = FileManager.default
         var result: [AppItem] = []

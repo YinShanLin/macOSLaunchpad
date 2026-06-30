@@ -3,6 +3,7 @@ import AppKit
 
 struct AppIconView: View {
     let app: AppItem
+    let icon: NSImage?
 
     @State private var isHovering = false
 
@@ -12,16 +13,22 @@ struct AppIconView: View {
 
     var body: some View {
         VStack(spacing: 6) {
-            Image(nsImage: app.icon)
-                .resizable()
-                .frame(width: iconSize, height: iconSize)
-                .shadow(
-                    color: .black.opacity(isHovering ? 0.3 : 0.15),
-                    radius: isHovering ? 12 : 5,
-                    y: isHovering ? 5 : 2
-                )
-                .scaleEffect(isHovering ? 1.1 : 1.0)
-                .animation(.spring(response: 0.3, dampingFraction: 0.65), value: isHovering)
+            if let icon = icon {
+                Image(nsImage: icon)
+                    .resizable()
+                    .frame(width: iconSize, height: iconSize)
+                    .shadow(
+                        color: .black.opacity(isHovering ? 0.3 : 0.15),
+                        radius: isHovering ? 12 : 5,
+                        y: isHovering ? 5 : 2
+                    )
+                    .scaleEffect(isHovering ? 1.1 : 1.0)
+                    .animation(.spring(response: 0.3, dampingFraction: 0.65), value: isHovering)
+            } else {
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(Color.white.opacity(0.12))
+                    .frame(width: iconSize, height: iconSize)
+            }
 
             Text(app.name)
                 .font(.system(size: 11, weight: .medium))

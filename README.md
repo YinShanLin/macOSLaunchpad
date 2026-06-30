@@ -4,6 +4,8 @@ macOS Launchpad 复刻版。以窗口形式展示所有已安装 App，支持搜
 
 ## 功能
 
+- **快如闪电** — 三级图标缓存（内存 → 磁盘 → NSWorkspace），首次后毫秒级加载
+- **增量刷新** — App 列表缓存到磁盘，二次启动比对差异，仅加载新增图标
 - **递归扫描** — 自动遍历 `/Applications`、`~/Applications`、`/System/Applications` 等目录
 - **自适应网格** — 根据窗口宽度动态调整列数，拖拽缩放即时重排
 - **窗口毛玻璃** — 系统原生 `NSVisualEffectView` 毛玻璃 + 半透明窗口，与 macOS 风格一致
@@ -50,7 +52,9 @@ swift build -c release
 │   ├── LaunchpadView.swift           # 主视图（搜索、网格、键盘交互）
 │   ├── AppIconView.swift             # App 图标组件（动效、无障碍）
 │   ├── AppItem.swift                 # 数据模型（递归扫描、Spotlight 名称）
-│   └── LaunchpadViewModel.swift      # ViewModel（后台加载、搜索过滤）
+│   ├── AppCacheManager.swift         # 磁盘缓存 + 增量 diff
+│   ├── AppIconLoader.swift           # 三级图标缓存（actor 并发）
+│   └── LaunchpadViewModel.swift      # ViewModel（两阶段加载、增量刷新）
 ├── Scripts/
 │   └── generate_icon.swift           # Core Graphics 图标生成脚本
 ├── build_app.sh                      # 编译 → 打包 → 签名一体化脚本

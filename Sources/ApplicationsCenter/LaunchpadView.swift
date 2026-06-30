@@ -64,7 +64,7 @@ struct LaunchpadView: View {
             ScrollView {
                 LazyVGrid(columns: columns, spacing: 12) {
                     ForEach(viewModel.filteredApps) { app in
-                        AppIconView(app: app)
+                        AppIconView(app: app, icon: viewModel.iconImages[app.id])
                     }
                 }
                 .padding(.horizontal, 60)
