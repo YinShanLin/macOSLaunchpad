@@ -17,24 +17,18 @@ class LaunchpadViewModel: ObservableObject {
 
     func loadApps() async {
         isLoading = true
-        var allApps: [AppItem] = []
 
-        for dir in AppItem.appDirectories {
-            let fm = FileManager.default
-            guard let contents = try? fm.contentsOfDirectory(atPath: dir) else { continue }
-            for file in contents {
-                let url = URL(fileURLWithPath: dir).appendingPathComponent(file)
-                if let app = AppItem(url: url) {
-                    allApps.append(app)
-                }
-            }
-        }
+        // I/O 与图标解码在后台线程执行，仅最终赋值回到主线程
+        let directories = AppItem.appDirectories
+        var scanned = await Task.detached(priority: .userInitiated) {
+            AppItem.scanAll(in: directories)
+        }.value
 
-        allApps.sort { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+        scanned.sort { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
 
         var seen = Set<String>()
         var deduplicated: [AppItem] = []
-        for app in allApps {
+        for app in scanned {
             if seen.insert(app.name).inserted {
                 deduplicated.append(app)
             }
