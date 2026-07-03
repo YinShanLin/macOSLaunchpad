@@ -46,8 +46,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.backgroundColor = .clear
 
         if let screen = NSScreen.main {
-            let w = screen.visibleFrame.width * 0.85
-            let h = screen.visibleFrame.height * 0.85
+            let screenRatio: CGFloat = screen.visibleFrame.width < 1200 ? 0.75 : 0.85
+            let w = screen.visibleFrame.width * screenRatio
+            let h = screen.visibleFrame.height * screenRatio
             let x = (screen.visibleFrame.width - w) / 2 + screen.visibleFrame.minX
             let y = (screen.visibleFrame.height - h) / 2 + screen.visibleFrame.minY
             window.setFrame(NSRect(x: x, y: y, width: w, height: h), display: true)

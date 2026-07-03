@@ -32,7 +32,7 @@ actor AppIconLoader {
         return await withCheckedContinuation { continuation in
             DispatchQueue.global(qos: .userInitiated).async {
                 let icon = NSWorkspace.shared.icon(forFile: app.url.path)
-                let resized = Self.resizeIcon(icon, to: 64)
+                let resized = Self.resizeIcon(icon, to: 128)
 
                 Task.detached { [weak self] in
                     await self?.saveToDisk(image: resized, cacheKey: app.iconCacheKey)
